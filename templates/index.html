@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSV Search Tool</title>
+</head>
+<body>
+    <h2>Search CSV File</h2>
+    <form method="post">
+        <input type="text" name="search" placeholder="Enter keyword..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    {% if results %}
+    <h3>Results:</h3>
+    <table border="1" cellpadding="5">
+        <tr>
+            {% for col in results[0].keys() %}
+                <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in results %}
+        <tr>
+            {% for col in row.values() %}
+                <td>{{ col }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% elif results is not none %}
+    <p>No results found.</p>
+    {% endif %}
+</body>
+</html>
