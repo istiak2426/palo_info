@@ -4,21 +4,22 @@ import pandas as pd
 app = Flask(__name__)
 
 # Load CSV once at startup
-CSV_FILE = "data.csv"
+CSV_FILE = "data.csv"   # change to your file name
 df = pd.read_csv(CSV_FILE)
 
-# Precompute a combined lowercase column for searching
-df["_search"] = df.astype(str).apply(lambda row: " ".join(row.values).lower(), axis=1)
+# Precompute a search-friendly text column (one-time cost at startup)
+df["_search_blob"] = df.astype(str).agg(" ".join, axis=1).str.lower()
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = []
     if request.method == "POST":
-        term = request.form.get("search", "").lower()
+        term = request.form.get("search")
         if term:
-            # Search only in the precomputed "_search" column
-            mask = df["_search"].str.contains(term, na=False)
-            results = df[mask].drop(columns="_search").to_dict(orient="records")
+            term = term.lower()
+            # Fast search: check only the precomputed blob column
+            mask = df["_search_blob"].str.contains(term, na=False, regex=False)
+            results = df[mask].drop(columns="_search_blob").to_dict(orient="records")
     return render_template("index.html", results=results)
 
 if __name__ == "__main__":
